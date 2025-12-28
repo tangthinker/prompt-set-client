@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show ThemeMode, Colors, Size;
+import 'package:flutter/material.dart' show ThemeMode, Size;
 import 'package:macos_ui/macos_ui.dart';
 import 'package:macos_window_utils/macos_window_utils.dart';
 import 'package:window_manager/window_manager.dart';
@@ -26,7 +26,6 @@ void main() async {
       WindowOptions windowOptions = const WindowOptions(
         size: Size(1024, 768),
         center: true,
-        backgroundColor: Colors.transparent,
         skipTaskbar: false,
         titleBarStyle: TitleBarStyle.hidden,
       );
@@ -68,35 +67,73 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return MacosWindow(
-      sidebar: Sidebar(
-        minWidth: 200,
-        builder: (context, scrollController) {
-          return SidebarItems(
-            currentIndex: _pageIndex,
-            onChanged: (index) {
-              setState(() => _pageIndex = index);
+    return Stack(
+      children: [
+        MacosWindow(
+          sidebar: Sidebar(
+            minWidth: 200,
+            builder: (context, scrollController) {
+              return SidebarItems(
+                currentIndex: _pageIndex,
+                onChanged: (index) {
+                  setState(() => _pageIndex = index);
+                },
+                items: const [
+                  SidebarItem(
+                    leading: MacosIcon(CupertinoIcons.home),
+                    label: Text('Home'),
+                  ),
+                  SidebarItem(
+                    leading: MacosIcon(CupertinoIcons.settings),
+                    label: Text('Settings'),
+                  ),
+                ],
+              );
             },
-            items: const [
-              SidebarItem(
-                leading: MacosIcon(CupertinoIcons.home),
-                label: Text('Home'),
-              ),
-              SidebarItem(
-                leading: MacosIcon(CupertinoIcons.settings),
-                label: Text('Settings'),
-              ),
+          ),
+          child: IndexedStack(
+            index: _pageIndex,
+            children: const [
+              HomePage(),
+              SettingsPage(),
             ],
-          );
-        },
-      ),
-      child: IndexedStack(
-        index: _pageIndex,
-        children: const [
-          HomePage(),
-          SettingsPage(),
-        ],
-      ),
+          ),
+        ),
+        if (Platform.isWindows)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SizedBox(
+              height: 32,
+              child: DragToMoveArea(
+                child: Row(
+                  children: [
+                    const SizedBox(width: 8),
+                    WindowCaptionButton.close(
+                      brightness: MacosTheme.of(context).brightness,
+                      onPressed: () => windowManager.close(),
+                    ),
+                    WindowCaptionButton.minimize(
+                      brightness: MacosTheme.of(context).brightness,
+                      onPressed: () => windowManager.minimize(),
+                    ),
+                    WindowCaptionButton.maximize(
+                      brightness: MacosTheme.of(context).brightness,
+                      onPressed: () async {
+                        if (await windowManager.isMaximized()) {
+                          windowManager.unmaximize();
+                        } else {
+                          windowManager.maximize();
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
