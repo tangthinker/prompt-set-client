@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show ThemeMode, Size, Brightness;
+import 'package:flutter/material.dart' show ThemeMode, Size, Brightness, Colors;
 import 'package:macos_ui/macos_ui.dart';
 import 'package:macos_window_utils/macos_window_utils.dart';
 import 'package:prompt_set_client/widgets/macos_window_buttons.dart';
@@ -113,8 +113,66 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _pageIndex = 0;
 
+  Widget _buildWindowsSidebarItem({
+    required IconData icon,
+    required String label,
+    required int index,
+    required bool isDark,
+  }) {
+    final isSelected = _pageIndex == index;
+    return GestureDetector(
+      onTap: () => setState(() => _pageIndex = index),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (isDark ? const Color(0xFF3A3A3A) : const Color(0xFFE0E0E0))
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: isSelected
+                    ? (isDark ? CupertinoColors.white : CupertinoColors.black)
+                    : (isDark
+                          ? const Color(0xFFAAAAAA)
+                          : const Color(0xFF555555)),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+                  color: isSelected
+                      ? (isDark ? CupertinoColors.white : CupertinoColors.black)
+                      : (isDark
+                            ? const Color(0xFFAAAAAA)
+                            : const Color(0xFF555555)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildWindowsContent() {
     final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
+    final sidebarColor = isDark
+        ? const Color(0xFF202020)
+        : const Color(0xFFF3F3F3);
+    final dividerColor = isDark
+        ? const Color(0xFF333333)
+        : const Color(0xFFE5E5E5);
+
     return CupertinoPageScaffold(
       backgroundColor: isDark
           ? const Color(0xFF000000)
@@ -123,62 +181,32 @@ class _MyHomePageState extends State<MyHomePage> {
         children: [
           Row(
             children: [
+              // Sidebar
               Container(
-                width: 200,
-                color: isDark
-                    ? const Color(0xFF1A1A1A)
-                    : CupertinoColors.systemGroupedBackground,
+                width: 220,
+                color: sidebarColor,
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 40),
-                    CupertinoListSection.insetGrouped(
-                      backgroundColor: CupertinoColors.transparent,
-                      children: [
-                        CupertinoListTile(
-                          leading: Icon(
-                            CupertinoIcons.home,
-                            color: isDark ? CupertinoColors.white : null,
-                          ),
-                          title: Text(
-                            'Home',
-                            style: TextStyle(
-                              color: isDark ? CupertinoColors.white : null,
-                            ),
-                          ),
-                          onTap: () => setState(() => _pageIndex = 0),
-                          backgroundColor: _pageIndex == 0
-                              ? (isDark
-                                    ? CupertinoColors.systemFill.withOpacity(
-                                        0.4,
-                                      )
-                                    : CupertinoColors.systemFill)
-                              : null,
-                        ),
-                        CupertinoListTile(
-                          leading: Icon(
-                            CupertinoIcons.settings,
-                            color: isDark ? CupertinoColors.white : null,
-                          ),
-                          title: Text(
-                            'Settings',
-                            style: TextStyle(
-                              color: isDark ? CupertinoColors.white : null,
-                            ),
-                          ),
-                          onTap: () => setState(() => _pageIndex = 1),
-                          backgroundColor: _pageIndex == 1
-                              ? (isDark
-                                    ? CupertinoColors.systemFill.withOpacity(
-                                        0.4,
-                                      )
-                                    : CupertinoColors.systemFill)
-                              : null,
-                        ),
-                      ],
+                    const SizedBox(height: 50), // 避开红绿灯区域
+                    _buildWindowsSidebarItem(
+                      icon: CupertinoIcons.home,
+                      label: 'Home',
+                      index: 0,
+                      isDark: isDark,
+                    ),
+                    _buildWindowsSidebarItem(
+                      icon: CupertinoIcons.settings,
+                      label: 'Settings',
+                      index: 1,
+                      isDark: isDark,
                     ),
                   ],
                 ),
               ),
+              // Vertical Divider
+              Container(width: 1, color: dividerColor),
+              // Content
               Expanded(
                 child: IndexedStack(
                   index: _pageIndex,
