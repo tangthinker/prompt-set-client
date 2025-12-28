@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show ThemeMode, Size;
 import 'package:macos_ui/macos_ui.dart';
 import 'package:macos_window_utils/macos_window_utils.dart';
+import 'package:prompt_set_client/widgets/macos_window_buttons.dart';
 import 'package:window_manager/window_manager.dart';
 
 Future<void> _configureMacosWindowUtils() async {
@@ -44,6 +45,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (Platform.isWindows) {
+      return CupertinoApp(
+        title: 'Prompt Set Client',
+        theme: const CupertinoThemeData(),
+        home: const MyHomePage(),
+        debugShowCheckedModeBanner: false,
+      );
+    }
+
     return MacosApp(
       title: 'Prompt Set Client',
       theme: MacosThemeData.light(),
@@ -65,8 +75,74 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _pageIndex = 0;
 
+  Widget _buildWindowsContent() {
+    return CupertinoPageScaffold(
+      child: Stack(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 200,
+                color: CupertinoColors.systemGroupedBackground,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 40),
+                    CupertinoListSection.insetGrouped(
+                      backgroundColor: CupertinoColors.transparent,
+                      children: [
+                        CupertinoListTile(
+                          leading: const Icon(CupertinoIcons.home),
+                          title: const Text('Home'),
+                          onTap: () => setState(() => _pageIndex = 0),
+                          backgroundColor: _pageIndex == 0
+                              ? CupertinoColors.systemFill
+                              : null,
+                        ),
+                        CupertinoListTile(
+                          leading: const Icon(CupertinoIcons.settings),
+                          title: const Text('Settings'),
+                          onTap: () => setState(() => _pageIndex = 1),
+                          backgroundColor: _pageIndex == 1
+                              ? CupertinoColors.systemFill
+                              : null,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: IndexedStack(
+                  index: _pageIndex,
+                  children: const [HomePage(), SettingsPage()],
+                ),
+              ),
+            ],
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SizedBox(
+              height: 32,
+              child: DragToMoveArea(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: const [MacosWindowButtons()],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (Platform.isWindows) {
+      return _buildWindowsContent();
+    }
     return Stack(
       children: [
         MacosWindow(
@@ -93,46 +169,9 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           child: IndexedStack(
             index: _pageIndex,
-            children: const [
-              HomePage(),
-              SettingsPage(),
-            ],
+            children: const [HomePage(), SettingsPage()],
           ),
         ),
-        if (Platform.isWindows)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: SizedBox(
-              height: 32,
-              child: DragToMoveArea(
-                child: Row(
-                  children: [
-                    const SizedBox(width: 8),
-                    WindowCaptionButton.close(
-                      brightness: MacosTheme.of(context).brightness,
-                      onPressed: () => windowManager.close(),
-                    ),
-                    WindowCaptionButton.minimize(
-                      brightness: MacosTheme.of(context).brightness,
-                      onPressed: () => windowManager.minimize(),
-                    ),
-                    WindowCaptionButton.maximize(
-                      brightness: MacosTheme.of(context).brightness,
-                      onPressed: () async {
-                        if (await windowManager.isMaximized()) {
-                          windowManager.unmaximize();
-                        } else {
-                          windowManager.maximize();
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
       ],
     );
   }
@@ -143,6 +182,13 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (Platform.isWindows) {
+      return const CupertinoPageScaffold(
+        navigationBar: CupertinoNavigationBar(middle: Text('Home')),
+        child: Center(child: Text('Welcome to Prompt Set Client')),
+      );
+    }
+
     return MacosScaffold(
       toolBar: ToolBar(
         title: const Text('Home'),
@@ -158,9 +204,7 @@ class HomePage extends StatelessWidget {
       children: [
         ContentArea(
           builder: (context, scrollController) {
-            return const Center(
-              child: Text('Welcome to Prompt Set Client'),
-            );
+            return const Center(child: Text('Welcome to Prompt Set Client'));
           },
         ),
       ],
@@ -173,16 +217,19 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (Platform.isWindows) {
+      return const CupertinoPageScaffold(
+        navigationBar: CupertinoNavigationBar(middle: Text('Settings')),
+        child: Center(child: Text('Settings Page')),
+      );
+    }
+
     return MacosScaffold(
-      toolBar: const ToolBar(
-        title: Text('Settings'),
-      ),
+      toolBar: const ToolBar(title: Text('Settings')),
       children: [
         ContentArea(
           builder: (context, scrollController) {
-            return const Center(
-              child: Text('Settings Page'),
-            );
+            return const Center(child: Text('Settings Page'));
           },
         ),
       ],
