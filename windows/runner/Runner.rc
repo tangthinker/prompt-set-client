@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "prompt_set_client" "\0"
+            VALUE "FileDescription", "Prompt Set" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "prompt_set_client" "\0"
+            VALUE "InternalName", "Prompt Set" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2025 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "prompt_set_client.exe" "\0"
-            VALUE "ProductName", "prompt_set_client" "\0"
+            VALUE "OriginalFilename", "Prompt Set.exe" "\0"
+            VALUE "ProductName", "Prompt Set" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

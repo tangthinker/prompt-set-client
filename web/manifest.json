@@ -1,6 +1,6 @@
 {
-    "name": "prompt_set_client",
-    "short_name": "prompt_set_client",
+    "name": "Prompt Set",
+    "short_name": "Prompt Set",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
