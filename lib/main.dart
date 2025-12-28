@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show ThemeMode, Size;
+import 'package:flutter/material.dart' show ThemeMode, Size, Brightness;
 import 'package:macos_ui/macos_ui.dart';
 import 'package:macos_window_utils/macos_window_utils.dart';
 import 'package:prompt_set_client/widgets/macos_window_buttons.dart';
@@ -40,15 +40,53 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // 初始化同步亮度给原生窗口
+    if (Platform.isWindows) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final brightness =
+            WidgetsBinding.instance.platformDispatcher.platformBrightness;
+        windowManager.setBrightness(brightness);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    if (mounted) {
+      setState(() {});
+      if (Platform.isWindows) {
+        final brightness =
+            WidgetsBinding.instance.platformDispatcher.platformBrightness;
+        windowManager.setBrightness(brightness);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     if (Platform.isWindows) {
+      final brightness = MediaQuery.platformBrightnessOf(context);
       return CupertinoApp(
         title: 'Prompt Set Client',
-        theme: const CupertinoThemeData(),
+        theme: CupertinoThemeData(brightness: brightness),
         home: const MyHomePage(),
         debugShowCheckedModeBanner: false,
       );
@@ -76,14 +114,20 @@ class _MyHomePageState extends State<MyHomePage> {
   int _pageIndex = 0;
 
   Widget _buildWindowsContent() {
+    final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
     return CupertinoPageScaffold(
+      backgroundColor: isDark
+          ? const Color(0xFF000000)
+          : const Color(0xFFFFFFFF),
       child: Stack(
         children: [
           Row(
             children: [
               Container(
                 width: 200,
-                color: CupertinoColors.systemGroupedBackground,
+                color: isDark
+                    ? const Color(0xFF1A1A1A)
+                    : CupertinoColors.systemGroupedBackground,
                 child: Column(
                   children: [
                     const SizedBox(height: 40),
@@ -91,19 +135,43 @@ class _MyHomePageState extends State<MyHomePage> {
                       backgroundColor: CupertinoColors.transparent,
                       children: [
                         CupertinoListTile(
-                          leading: const Icon(CupertinoIcons.home),
-                          title: const Text('Home'),
+                          leading: Icon(
+                            CupertinoIcons.home,
+                            color: isDark ? CupertinoColors.white : null,
+                          ),
+                          title: Text(
+                            'Home',
+                            style: TextStyle(
+                              color: isDark ? CupertinoColors.white : null,
+                            ),
+                          ),
                           onTap: () => setState(() => _pageIndex = 0),
                           backgroundColor: _pageIndex == 0
-                              ? CupertinoColors.systemFill
+                              ? (isDark
+                                    ? CupertinoColors.systemFill.withOpacity(
+                                        0.4,
+                                      )
+                                    : CupertinoColors.systemFill)
                               : null,
                         ),
                         CupertinoListTile(
-                          leading: const Icon(CupertinoIcons.settings),
-                          title: const Text('Settings'),
+                          leading: Icon(
+                            CupertinoIcons.settings,
+                            color: isDark ? CupertinoColors.white : null,
+                          ),
+                          title: Text(
+                            'Settings',
+                            style: TextStyle(
+                              color: isDark ? CupertinoColors.white : null,
+                            ),
+                          ),
                           onTap: () => setState(() => _pageIndex = 1),
                           backgroundColor: _pageIndex == 1
-                              ? CupertinoColors.systemFill
+                              ? (isDark
+                                    ? CupertinoColors.systemFill.withOpacity(
+                                        0.4,
+                                      )
+                                    : CupertinoColors.systemFill)
                               : null,
                         ),
                       ],
@@ -183,9 +251,24 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (Platform.isWindows) {
-      return const CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(middle: Text('Home')),
-        child: Center(child: Text('Welcome to Prompt Set Client')),
+      final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
+      return CupertinoPageScaffold(
+        backgroundColor: isDark
+            ? const Color(0xFF000000)
+            : const Color(0xFFFFFFFF),
+        navigationBar: CupertinoNavigationBar(
+          middle: Text(
+            'Home',
+            style: TextStyle(color: isDark ? CupertinoColors.white : null),
+          ),
+          backgroundColor: isDark ? const Color(0xFF1A1A1A) : null,
+        ),
+        child: Center(
+          child: Text(
+            'Welcome to Prompt Set Client',
+            style: TextStyle(color: isDark ? CupertinoColors.white : null),
+          ),
+        ),
       );
     }
 
@@ -218,9 +301,24 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (Platform.isWindows) {
-      return const CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(middle: Text('Settings')),
-        child: Center(child: Text('Settings Page')),
+      final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
+      return CupertinoPageScaffold(
+        backgroundColor: isDark
+            ? const Color(0xFF000000)
+            : const Color(0xFFFFFFFF),
+        navigationBar: CupertinoNavigationBar(
+          middle: Text(
+            'Settings',
+            style: TextStyle(color: isDark ? CupertinoColors.white : null),
+          ),
+          backgroundColor: isDark ? const Color(0xFF1A1A1A) : null,
+        ),
+        child: Center(
+          child: Text(
+            'Settings Page',
+            style: TextStyle(color: isDark ? CupertinoColors.white : null),
+          ),
+        ),
       );
     }
 
